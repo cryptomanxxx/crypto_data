@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <meta charset="utf-8" />
+  <style>
+    body {
+      overflow-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <script>
+
+    // converts a unix timestamp to a date string  
+    function time(w) {
+      var MyDate = new Date(w * 1000);
+      var MyDateString = MyDate.getFullYear() + '-' + ('0' + (MyDate.getMonth() + 1)).slice(-2) + '-' + ('0' + MyDate.getDate()).slice(-2);
+      return JSON.stringify(MyDateString);
+    }
+
+    // get historial crypto currency price data with a synchronous (sync) data request to cryptocompare's api
+    function cryptoS(t) {
+      var ApiKey = "ddd85b386e1a7c889e468a4933f75f22f52b0755b747bdb637ab39c88a3bc19b";
+      var urlA = "https://min-api.cryptocompare.com/data/histoday?fsym=" + t + "&tsym=USD&limit=1000&api_key=" + ApiKey;
+      var result = null;
+      $.ajax({
+        url: urlA,
+        async: false,   // get historial crypto currency price data with ansynchrously data call to cryptocompare
+        dataType: "json",
+        success: function (data) { result = data; }
+      });
+
+      var y = result.Data;
+      var D1 = [];
+      var D2 = [];
+
+      for (var i = 0; i < y.length; i++) {
+        D1.push(time(y[i].time));
+        D2.push(y[i].close);
+      }
+      console.log(D2);
+      document.body.innerHTML += "sync crypto data call = " + D2 + "<br>";
+    }
+
+    // get historial crypto currency price data with an asynchronous (async) data request to cryptocompare's api
+    function cryptoA(t) {
+      function getData(t) {
+        var ApiKey = "ddd85b386e1a7c889e468a4933f75f22f52b0755b747bdb637ab39c88a3bc19b";
+        var urlA = "https://min-api.cryptocompare.com/data/histoday?fsym=" + t + "&tsym=USD&limit=1000&api_key=" + ApiKey;
+        return new Promise((resolve, reject) => {
+          $.ajax({
+            url: urlA,
+            async: true,
+            dataType: "json",
+            success: function (result) {
+              var y = result.Data;
+              var D1 = [];
+              var D2 = [];
+              for (var i = 0; i < y.length; i++) {
+                D1.push(y[i].time);
+                D2.push(y[i].close);
+              }
+              resolve(D2, null)
+            },
+            error: function () {
+              reject(null, data);
+            }
+          });
+        });
+      }
+      function printToDiv(a) {
+        document.body.innerHTML += "async crypto data call = " + JSON.stringify(a);
+        console.log(a);
+      }
+      getData(t).then((data, error) => printToDiv(data));
+      return "";
+    }
+
+    cryptoS("BTC");
+    cryptoA("BTC");
+
+  </script>
+</body>
+
+</html>
